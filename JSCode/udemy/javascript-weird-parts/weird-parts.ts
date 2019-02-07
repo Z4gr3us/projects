@@ -371,3 +371,152 @@ var arr = [
 
 console.log(arr);
 arr[3](arr[2].name) // say you want to reference the function and invoke (run) it and give it the name that is in the Array w/in the array? This is how.
+
+
+// 'arguments' AND SPREAD
+
+/* ------- 
+
+Execution Context is Created (FUNCTION)
+
+1.) Variable Environment - Each Execution Context has this variable environment where the variables of that function live
+2.) Outer Environment - It has a reference to it's outer environment; it's outer lexical environment.  Where it sits physically in the code. Which tells it how to look down the scopr chain.
+3.) 'this' - Every time an Execution Context is created; every time a fucntion is run, it gives us this variable called 'this'.
+
+and 
+
+4.) 'arguments' - contain a list of all the values of all the parameters that you pass to a fucnction.
+
+/* -------- BIG WORD ALERT - ARGUMENTS - The Parameters you pass to a function. Javascript gives you a keyword of the same name which contains them all.
+
+-----------*/
+
+function greet(firstname, lastname, language) {
+
+    language = language || 'en'; // this is how you set a 'default' parameter i.e - Language is equal to 'language' or 'en'.
+
+    if (arguments.length === 0) {
+        console.log('Missing Parameters!');
+        console.log('---------------');
+        return;
+    }
+
+    console.log(firstname);
+    console.log(lastname);
+    console.log(language);
+    console.log(arguments) // when you have arguments (i.e. (firstname, lastname etc.)) then you have another global variable that is made for you just like 'this'.
+    console.log('arg 0: ' + arguments[0]);
+    console.log('-----------------')
+}
+
+// greet(); 
+// greet('John');
+// greet('John', 'Doe');
+// greet('John', 'Doe', 'es');
+// greet('Bob', 'Tim', 'zn');
+
+
+// Funciton Overloading
+
+function greet(firstname, lastname, language) {
+
+    language = language || 'en'
+
+    if (language === 'en') {
+        console.log('Hello ' + firstname + ' ' + lastname);
+    }
+
+    if (language === 'es') {
+        console.log('Hola ', + firsname + ' ' + lastname);
+    
+    }
+
+    function greetEnglish(firstname, lastname) {
+        greet(firstname, lastname, 'en');
+    }
+
+    function greetSpanish(firstname, lastname) {
+        greet(firstname, lastname, 'es');
+    }
+}
+
+// greetEnglish('John', 'Doe');
+// greetSpanish('John', 'Doe');
+
+
+
+/* ------------------- CONCEPTUAL ASIDE - Syntax Parsers -------------------------*/
+
+/* ----- 
+
+Remember that the code that you write isn't directly run on the computer but there's that intermediate program between your code that the computer that translates your code into something that the computer will understand.
+
+The Javascript Engine on your brower, for example, does exactly this.
+
+------- */
+
+
+/* ------------------- DANGEROUS ASIDE - Automatic Semicolon insertion -------------------------*/
+
+/* -------
+
+Semicolons are OPTIONAL in CORE Javascript?
+
+Why is this?
+
+Well, Javascript engine does something for you. If it sees one character at a time, it knows what the language expects; it knows that the syntax should look like. At the end of the line say you do a carriage return and you forget a Semicolon? Well the Javascript engine adds it for you. This is why it's OPTIONAL. Not because it's truly optional, but, becuase the Javascript Engine is putting them where it thinks they should be. If they're missing
+
+RULE ONE - you should always put your own semicolons in because you don't want the Javascript Engine to make that decision for you. Especially in the case of 'RETURN' Automatic Semicolon insertion can cause a lot of furstration.
+
+RULE TWO - Always, ALWAYS put a semicolon everywhere where you would expect it.
+
+
+---- */
+
+function getPerson() {
+
+    return // There's a carriage return here. So the Javascript Engine placed a smeicolon here. Hence the return result is undefined
+    {
+        firstname: 'Shawn'
+    }
+}
+console.log(getPerson());
+
+function getPerson() {
+
+    return { // this is correct
+        firstname: 'Shawn'
+    }
+}
+console.log(getPerson());
+
+
+/* ------------------- BIG WORD ALERT - Whitespace -------------------------*/
+
+/* ----- 
+
+Whitespace - Invisible characters that create literal "space" in your written code - Carriage returns, tabs, spaces.
+
+IMPORTANT - The whitepsace is ignored. SEE? YOU SHOULD DO THIS. Make your code readable and understandable with commenting
+
+------- */
+
+var 
+    // first name of person
+    firstname, 
+
+    // last name of the person
+    lastname, 
+    
+    // the language
+    // can be 'en' or 'es'
+    language;
+
+var person = {
+    firstname: 'Bill',
+    lastname: 'Furlough'
+}
+
+console.log(person);
+
+
