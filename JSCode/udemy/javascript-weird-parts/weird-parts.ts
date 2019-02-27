@@ -520,3 +520,307 @@ var person = {
 console.log(person);
 
 
+
+
+/* ----- IMMEDIATELY INVOKED FUNCTION EXPRESSIONS (IIFE)S ------- */
+
+// function statement
+function greet(name) {
+    console.log('Hello ' + name);
+}
+//greet('Ted');
+
+
+// using a function expression
+var greetFunc = function(name) {
+    console.log('Hello ' + name);
+}
+greetFunc('Ted');
+
+// This invokes the function immediately after creation. 
+// using an Immediately INvoked Function Expression (IIFE)
+
+var greeting = function(name) {
+    return 'Hello ' + name;
+}('Billy'); // invoking it immediatley here.
+            // Here's what happens:
+            // The Function Object 'function(name) {console.log('Hello ' + name);}' will be created
+            // Then it will be invoked '();' That is, called or run.
+            // And that value will be returned. And then THAT will be set equal to greeting 'var greeting ='
+            // So when you console.log(greeting); in this case, you will get 'Hello undefined' (because there's no value given yet (); )
+            // So if you give it a value (say ('Billy'); then you'd get 'Hello Billy')
+            // See what's happening? We're creating the function (function(name) {console.log('Hello ' + name);}) then calling the function (('Billy');)
+            // Now 'greeting' variable holds the string instead of the empty function
+            // So when you console.log(greeting); it'll spit back the completed string variable instead of just the function.
+console.log(greeting);
+
+// Valid Syntax:
+
+3;
+
+"I am a string"
+
+
+
+
+// Below is a classic example of an IIFE.
+// A wonderful tool in your Javascript Arsenal
+// You'll see this in almost every Javascript framework
+
+var firstname = 'Billy';
+
+(function(name) { 
+
+    var greeting = 'Inside IIFE: Hello';
+    console.log(greeting + ' ' + name);
+
+}(firstname)); // placing paranteses around the function makes it a valid syntactical function expression. Take the paranteses away, get an error.
+
+
+// IIFE
+
+var greeting = 'Hola';
+
+(function(global, name) { 
+
+    var greeting = 'Hello';
+    global.greeting = 'Hello';
+    console.log(greeting + ' ' + name);
+
+}(window, 'Dur')); // Here's my immediately Invoked Function Expression (IIFE) When this code is first loaded we have our Global Exectuion Context. Then it hits this line and creates '()' and then the code is run inside the new exectuion context (the '()')
+
+console.log(greeting);
+
+
+
+
+
+/* --------- UNDERSTANDING CLOSURES -------------- */
+
+function greet(whattosay) {
+
+    return function(name) {
+        console.log(whattosay + ' ' + name);
+    }
+
+}
+
+var sayHi = greet('Hi');
+sayHi('Shawn')
+
+/* --- How is all this possible? Because of 'Closures'
+
+Here's what's going on under the hood - 
+1. this line 'var sayHi = greet('Hi');' creates a new excution context that contains whattosay = 'Hi' - after this is done it 'pops off the stack'
+2. BUT the memory space is still filled with 'Hi'
+3. then the line 'saysHi('Shawn') which w/in the Global environment creates another Execution Context
+4. becasue there is still a reference to the 'Hi' the execution stack moving down the scope chain can still find it
+5. the execution context has 'Closed in' its inner variables this is called a closure
+
+--- */
+
+
+
+
+/* --------- UNDERSTANDING CLOSURES 2 -------------- */
+
+function buildFunctions() {
+
+    var arr= [];
+
+    for (var i = 0; i < 3; i++) {
+
+        arr.push(
+            function() {
+                console.log(i)
+            }
+        )
+    }
+
+    return arr;
+}
+
+var fs = buildFunctions();
+
+fs[0]();
+fs[1]();
+fs[2]();
+
+// What do you expect to see here? 
+
+/* --- 
+Global Exectution Context contains -- buildFunctions() and fs, then,
+var fs = buildFunctions is invoked and in the execution context you have 'i is 3' and then 'arr [f0, f1, f2] - f for function cause the array contains 3 functions' 
+so when fs[0](); is invoked you have a new execution context that point to the very last memory spot that was invoked previous
+which is '3' -- i = 3 - it's only going to be able to tell you what's in memory right now; only right now that we're executing the function
+We're doing EXACTLY what we're telling the Javascript Engine to do
+The 'console.log' isn't executed when the buildFunctions execution context is invoked but when fs is invoked (i.e. fs[0](); fs[1](); fs[2]();)
+---*/
+
+function buildFunctions2() {
+
+    var arr= [];
+
+    for (var i = 0; i < 3; i++) {
+        arr.push(
+            (function(j) {
+               return function() {
+                   console.log(j);
+               }
+            }(i))
+        )
+    }
+
+    return arr;
+}
+
+var fs2 = buildFunctions2();
+
+fs2[0]();
+fs2[1]();
+fs2[2]();
+
+/* --- 
+You may ask yourself, 'Well, what if I wanted this to work OUTSIDE the Global Context and around the Closure?'
+
+1. with ES6 you could add a line above the 'arr.push ' that incorporates a 'let' variable - like 'let j = i' then change 'console.log(i)' to console.log(j)
+2. OR you use an Immediately Invoked Function Expression or IIFE
+3. you do this by adding a parent scope that holds the current value of 'i'
+4. by placing paranthese around the funciton:
+
+"(function(j) {
+               
+            }(i))"
+
+5. Now we have a function that is passing 'i' - So what's going to happen?
+6. well, every time the loop runs it's going to execute the above function
+7. passing 0 then, executing a new one it will
+8. pass 1 then, executing yet another execution context
+9. And 'j' will be stored in EACH ONE of those execution contexts
+10. so we'll have an execution context where 'j = 0' and another where 'j = 1' and then another where 'j = 2'
+11. And even though those execution contexts will go away after this line is run 
+
+"(function(j) {
+               
+            }(i))"
+
+we know thanks to 'CLOSURES' that all those three 'j's' will be hanging out in memory.
+12. So then we just add "return function() { console.log(j); }":
+
+"(function(j) {
+               return function() {
+                   console.log(j);
+               }
+            }(i))"
+
+with that line added we know that 'push' will push the result of the execution of the above funciton right?
+13. and executing this function GIVES US BACK a funciton
+14. so then 'j' gets pushed into the array
+15. It doesn't need to go out of this 'for loop' it'll just go out to this execution context:
+
+"(function(j) {
+               return function() {
+                   console.log(j);
+               }
+            }(i))"
+
+and 'j' will store that vaule at the moment that it was executed in the loop
+16. So we should see what we originally thought that we would see which was '0, 1, 2'
+
+--- */
+
+
+
+
+
+
+//  FRAMEWORK ASIDE
+
+function makeGreeting(language) {
+
+    return function(firstname, lastname) {
+
+        if (language === 'en') {
+            console.log('Hello ' + firstname + ' ' + lastname);
+        }
+
+        if (language === 'es') {
+            console.log('Hola ' + firstname + ' ' + lastname);
+        }
+
+    }
+
+}
+
+var greetEnglish = makeGreeting('en');
+var greetSpanish = makeGreeting('es');
+
+greetEnglish('John', 'Doe');
+greetSpanish('John', 'Doe');
+
+/* --- 
+WLAKTHRU
+
+1. 'var greetEnglish = makeGreeting('en');' is executed and it gets its own execution context and stores 'language 'en'' in memory
+2. then it 'returns the function' (above if statements) in a variable called 'greetEnglish'
+2. then the second line we call 'makeGreeting' again
+3. this is the important distinction
+4. in the previous line we ONLY CALLED that OUTER function once so ALL those function in that array pointed to that SAME MEMORY SPACE
+5. but in this case we're calling the function twice
+6. when we call it a second time, we get a NEW EXECUTION CONTEXT - Every time you call a function, you get a NEW EXECUTION CONTEXT
+7. so that NEW EXECUTION CONTEXT has its own variable which is now 'language 'es'' stored in the variable 'greetSpanish'
+8. so when we write out:
+
+'greetEnglish('John', 'Doe');'
+
+We access everything w/in that first execution context still in memory sitting in a new variable called 'greetEnglish? It is a CLOSURE
+9. the 'if..' statements are in memory as well thus allowing us to add '('John', 'Doe')' and get the correct information back
+
+--- */
+
+
+
+
+// CLOSURES and CALLBACKS
+
+function sayHiLater() {
+
+    var greeting = 'Hi';
+
+    setTimeout(function() {
+
+        console.log(greeting);
+
+    }, 3000);
+}
+sayHiLater();
+
+// jQuery uses funciton expressions and first-class functions!
+// $(.button).click(function() {
+// 
+// });
+
+/* --- BIG FUCKIN WORD ALERT ---- */
+
+/* ---- CALLBACK FUNCTION - a function you give to another function, to be run when the other function is finished
+        So the function you call (i.e. invoke), 'calls back' by calling the function you gave it when it finishes.
+--- */
+
+// Here's a function that has a cllaback
+
+function tellMeWhenDone(callback) {
+
+    var a = 1000; // some work;
+    var b = 2000; // some more work;
+
+    callback(); // the 'callback', it runs the function I give it!
+
+}
+
+tellMeWhenDone(function() {
+    console.log('I am done!');
+});
+
+tellMeWhenDone(function() {
+    console.log('All done...');
+});
