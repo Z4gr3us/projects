@@ -824,3 +824,330 @@ tellMeWhenDone(function() {
 tellMeWhenDone(function() {
     console.log('All done...');
 });
+
+
+
+
+
+/* --- Call(), Apply() and Bind() Functions ---- */
+
+/* --- The FUNCTION is a special kind of object
+1. it has a NAME property that is optional (i.e. can be anonymous)
+2. it has a CODE property that contains the code and that code property is INVOCABLE
+3. BUT ALL FUCNTIONS HAVE SPECIAL ACCESS TO SEVERAL FUNCTION/METHODS:
+    - CALL()
+    - APPLY()
+    - BIND()
+And all of these have to do with the THIS variable and the arguments that you pass to the function as well.
+
+--- */
+
+var person = {
+    firstname: 'John',
+    lastname: 'Doe',
+    getFullName: function() {
+
+        var fullname = this.firstname + ' ' + this.lastname;
+        return fullname;
+
+    }
+}
+
+// so this is outside the above person object right? But we're wtill gonna use the 'THIS' keyword 
+
+// var logName = function(lang1, lang2) {
+
+//     console.log('Logged: ' + this.getFullName());
+// }
+
+// logName();
+
+/* --- The above will throw an error and fail. When you go to run it you'll get an 'undefined is not a funciton' Why?
+        1. the 'THIS' is a global object and 
+        2. there is no 'getFullName' so that's undefined
+        3. then we try to invoke undefined (getFullName())
+        4. and it gives an error
+
+Wouldn't it be nice to be able to CONTORL WHAT THE 'THIS' KEYWORD POINTS TO?
+
+--- */
+
+var logName = function(lang1, lang2) {
+
+    console.log('Logged: ' + this.getFullName());
+    console.log('Arguments: ' + lang1 + ' ' + lang2);
+    console.log('-----------------');
+
+}
+
+var logPersonName = logName.bind(person)  // If we use the BIND() method we can CONTROL THE THIS VARIABLE
+
+/* --- So, What exactly is the BIND() method doing?
+        1. well, first of all we wouldn't invoke the funciton by writing it like this - 'logName().bind' because logName is already funciton that already returns a value
+        2. we're looking to actually use the function 'logName' AS AN OBJECT and
+        3. CALL a METHOD of that OBJECT which,
+        4. in this case is BIND() --  so, just logName.bind cause this is a funciton object
+        5. then we pass to whatever OBJECT I want to BE THE 'THIS' Variable -- logName.bind(person) -- Which in this case is 'person' when the funciton runs 
+        6. KEY: The BIND METHOD RETURNS A NEW FUNCTION - so it actually MAKES A COPY of the logName function and sets up this new copy so that whenever it's run; when its execution context is created, the Javascript engine sees that it was created with this BIND() Method which sets up some hidden things in background so that when the Javascript engine decides 'what is the 'THIS' variable?' it says, 'Well it must be that (person)'
+
+--- */
+
+logPersonName('en');
+
+logName.call(person, 'en', 'es');
+logName.apply(person, ['en', 'es']); // this does the EXACT SAME THING AS CALL except it requires an ARRAY of PARAMETERS
+                                    // that's the only difference bewtween CALL() and APPLY()
+                                    // An example is below - take the above object and turn it into a function expression (encompassing it in parantheses) and then use the APPLY OR CALL Methods
+
+                                    (function(lang1, lang2) {
+
+                                        console.log('Logged: ' + this.getFullName());
+                                        console.log('Arguments: ' + lang1 + ' ' + lang2);
+                                        console.log('-----------------');
+                                    
+                                    }).apply(person, ['en', 'es']);
+
+
+var person2 = {
+    firstname: 'Jane',
+    lastname: 'Doe'
+}
+
+console.log(person.getFullName.apply(person2))
+
+/* --- BIG WORD ALERT --- */
+
+// FUNCTION CURRYING - Creating a copy of a function but with some preset parameters. Very useful in mathematical situations
+
+function multiply(a, b) {
+    return a*b;
+}
+
+var multiplyByTwo = multiply.bind(this, 2)
+console.log(multiplyByTwo(4));
+
+// in this case we've intentionally made a permanent character set to a number - this case it's a which is now always 2 thanks to this line of text (this, 2)
+
+
+
+
+
+
+
+
+
+/* --- FUNCTIONAL PROGRAMMING --- */
+
+function mapForEach(arr, fn) {
+    var newArr = [];
+    for (var i=0; i < arr.length; i++) {
+        newArr.push(
+            fn(arr[i])
+        )
+    };
+
+    return newArr;
+}
+
+
+var arr1 = [1,2,3];
+console.log(arr1);
+
+// below is what we did originally. A lot of work and redundant
+
+// var arr2 = [];
+// for (var i=0; i < arr1.length; i++) {
+
+//     arr2.push(arr1[i] * 2);
+
+// }
+
+// here (below) we use the above function (via FUNCTIONAL PROGRAMMING)
+
+var arr2 = mapForEach (arr1, function(item) {
+    return item * 2
+});
+console.log(arr2);
+
+// Here's what we've done above:
+// 1. pass the first variable (arr1) then 
+// 2. add a function using a function expression (function(item)) it needs to accept an 'item' cause that's what's going to be passed to it
+// 3. then it needs to reutrn and do something to that item
+// DO YOU SEE WHAT'S HAPPENING HERE?
+// What we did was we took all the for loop code and segemented it off into it's own function and then we gave it the work to do against each 'item' in the array
+
+var arr3 = mapForEach (arr1, function(item) {
+    return item > 2
+});
+
+console.log(arr3);
+
+// below we have a non-mathic way of doing it - meaning it is passing whatever limit (in this case 'limiter')
+// we have a bit of a problem, this function accepts two paraemeters
+// the mapForEach function above, only accepts one parameter?
+// How can we take a function and call it or use it in a way that we preset the first parameter so that the function call above ('fn(arr[i])' in mapFor Each function) pass it to 'item' and then we have a preset 'limiter'?
+// we can use .bind -- 'var arr4 = mapForEach(arr1, checkPastLimit.bind(this, 1));'
+
+
+var checkPastLimit = function(limiter, item) {
+    return item > limiter;
+}
+var arr4 = mapForEach(arr1, checkPastLimit.bind(this, 1));
+console.log(arr4)
+
+// But what if you don't want to use .bind all the time
+// Try to wrap up just this - checkPastLimit.bind(this, 1) into its own function
+// How would you do that?
+
+var checkPastLimitSimplified = function(limiter) {
+    return function(limiter, item) {
+        return item > limiter;
+    }.bind(this.limiter);
+};
+
+// above we have a function that returns a function
+// 1. We have a function that takes the limiter - function(limiter)
+// 2. It, itself returns the function that we'll actually use 'limiter', 'item' - function(limiter, item) {return item > limiter;}
+// 3. The we use .bind preset the 'limiter'
+// So when we run 'checkPastLimitSimplified' 
+// 5. It will execute
+// 6. And give us back a funciton that had the .bind called on it
+// Here we are CREATING AN OBJECT USING .BIND() that has it's first parameter PRESET
+// So let's use this
+
+var arr5 = mapForEach(arr1, checkPastLimitSimplified(1));
+console.log(arr5);
+
+// UNDERSCORE LIBRARY
+
+var arr6 = _.map(arr1, function(item) { return item * 3 });
+console.log(arr6);
+
+var arr7 = _.filter([2,3,4,5,6,7], function(item) { return item % 2 === 0; });
+console.log(arr7);
+
+
+
+
+
+/* --- OBJECT-ORIENTED JAVASCRIPT AND PROTOTYPAL INHERITANCE --- */
+
+
+/* --- BIG WORD ALERT --- */
+
+// Inheritance - One object gets access to the properties and methods of another object.
+
+
+// Classical Inheritance
+
+/* --- Verbose - when we talk about classical inheritance it can be messy and very complicated
+
+    friend
+    protected
+    private
+    interface
+
+--- */
+
+
+// Prototypal Inheritance
+
+/* --- Simple - very flexible, extensible, and easyt to understand.
+
+     When we talk about inheritance in javascript
+
+
+--- */
+
+/* -- UNDERSTANDING THE PROTOTYPE --- */
+
+var person = {
+    firstname: 'Default',
+    lastname: 'Default',
+    getFullName: function() {
+        return this.firstname + ' ' + this.lastname;
+    }
+}
+
+var john = {
+    firstname: 'Johsn',
+    lastname: 'Doek'
+}
+
+// don't do this EVER! for demo purposes only!!!!
+john.__proto__ = person;
+console.log(john.getFullName());
+
+var jane = {
+    firstname: 'Jane'
+}
+
+jane.__proto__ = person;
+console.log(jane.getFullName());
+
+/* --- EVERYTHING IS AN OBJECT (OR A PRIMITIVE) --- */
+
+var a = {};
+var b = function() { };
+var c = [];
+
+// go to console log in chrome devtools and type in a.__proto__ and see what you get
+
+
+
+
+
+/* --- REFLECTION AND EXTEND --- */
+
+
+/* --- BIG WORD ALERT --- */
+
+// REFLECTION - an object can look at itself, listing and changing its properties and methods
+
+var person = {
+    firstname: 'Default',
+    lastname: 'Default',
+    getFullName: function() {
+        return this.firstname + ' ' + this.lastname;
+    }
+}
+
+
+var john = {
+    firstname: 'John',
+    lastname: 'Foo'
+}
+
+// don't do this EVER!! for demo purposes only!!!
+john.__proto__ = person;
+
+
+
+for (var prop in john) {
+    if (john.hasOwnProperty(prop)) {
+        console.log(prop + ': ' + john[prop])
+    }
+}
+
+var jane = {
+    address: '111 Main St.',
+    getFormalFullName: function(){
+        return this.lastname + ', ' + this.firstname;
+    }
+}
+
+var jim = {
+    getFirstName: function() {
+        return firstname;
+    }
+}
+
+_.extend(john, jane, jim);
+console.log(john);
+
+
+/* ---   --- */
+
+
+
+
